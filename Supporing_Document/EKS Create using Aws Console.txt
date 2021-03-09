@@ -1,0 +1,94 @@
+Create A ROLE
+==============
+
+IAM ---> Create Role >>EKS >>EKS Cluster >> Savit>>EKSROLE-MY-SOUMEN
+
+Go To CloudFormation --> Upload the File(amazon-eks-vpc-private-subnets) >>
+Give Name: eks-vpc-stack
+All Leave it as default
+Next - Next - Create 
+Wait 10 Min
+
+=================================
+
+Click on EKS Cluster --> Create Cluster-->eks-cluster--->Choose Role-->Next--->Choose VPC -->Security group-->
+Public-Private-->Create
+
+Wait 10 Min
+
+=================================
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+=============================
+aws configure
+Access Key ID:
+AKIA2ABH34DLBOVH4DMY
+Secret Access Key:
+i0gtoCoKdG1X9UfATOA0FgR45hb3wfU/HG8str2i
+
+For testing
+=============================
+aws iam list-users
+aws sts get-caller-identity
+
+Now Install Iam Authenticator
+================================
+curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator
+chmod +x ./aws-iam-authenticator
+mkdir -p $HOME/bin && cp ./aws-iam-authenticator $HOME/bin/aws-iam-authenticator && export PATH=$PATH:$HOME/bin
+echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
+aws-iam-authenticator help
+
+Installing kubectl
+===========================
+Kubernetes 1.18:
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
+kubectl version --short --client
+
+Now Connect
+================
+aws eks --region us-east-1 update-kubeconfig --name els-cluster (CLUSTER NAME)
+Added new context arn:aws:eks:us-east-1:687278383318:cluster/els-cluster to /root/.kube/config
+
+
+cat /root/.kube/config
+export KUBECONFIG=/root/.kube/config
+kubectl get svc
+
+
+Now Add Node
+===============
+IAM --> Create A Role -> EC2 -- Search EKS ( AmazonEKS_CNI_Policy) , AmazonEKSWorkerNodePolicy -- Search for ec2container (AmazonEC2ContainerRegistryReadOnly)
+Next 
+make sure three permission are there
+Name: EKSWORKERNODEROLE-SOUMEN
+Save It
+
+Enter the Cluster --> configuration -->compute --> AddNodeGroup -- Give A Name (myworkernode) -- choose the role -->next
+Choose instance type (or leave it default) --> choose keypaire -- > create
+
+Wait 30 Min
+
+kubectl get nodes
+
+
+
+Now Deploy A Simple App
+=========================
+git clone https://github.com/soumenbiswas212/kubenets-sample-application-withmongo.git
+kubectl create -f mongo.yaml
+kubectl create -f knote.yaml
+kubectl get svc
+wait 10 min
+nslookup a2404ce6a47504a8e948e6e4c7e09762-586849822.us-east-1.elb.amazonaws.com
+
+http://a2404ce6a47504a8e948e6e4c7e09762-586849822.us-east-1.elb.amazonaws.com/
+
+
+
+
